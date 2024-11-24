@@ -6,10 +6,12 @@ pub const FacingState = enum(i8) {
 };
 
 pub const JumpState = enum(u32) { 
-    GROUNDED, 
+    GROUNDED,
+    START_JUMP,
     ASCENDING, 
     APEX, 
-    FALLING 
+    FALLING,
+    LANDING
 };
 
 pub const LateralMotionState = enum(u32) {

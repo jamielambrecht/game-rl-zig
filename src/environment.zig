@@ -4,8 +4,9 @@
 const globals = @import("globals.zig");
 const keys = @import("keys.zig");
 const player_ = @import("player.zig");
+const rl: type = @import("raylib");
 const controller = @import("player/controller.zig");
-const IPlayerEnvironment = @import("player/interface/player_environment.zig");
+const IPlayerEnvironment = @import("player/player_environment.zig");
 
 // Types
 const Player = player_.Player;
@@ -38,6 +39,11 @@ pub const Environment = struct {
             self.playerController.runKey.state == KeyState.HELD,
             // player.lateralMotionState
         );
-        self.player.update(self.gravity);
+        self.player.update(self.gravity, self.floor);
+    }
+
+    pub fn render(self: *Environment) void {
+        rl.clearBackground(rl.Color.white);
+        self.player.render();
     }
 };

@@ -10,20 +10,25 @@ const environment_ = @import("environment.zig");
 const Player = player_.Player;
 const Environment = environment_.Environment;
 
+fn init() void {
+    rl.initWindow(globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT, "Untitled Game");
+    rl.setTargetFPS(globals.TARGET_FPS);
+} 
+
 // Entry Point
 pub fn main() anyerror!void {
     defer rl.closeWindow();
-    rl.initWindow(globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT, "Untitled Game");
-    rl.setTargetFPS(globals.TARGET_FPS);
+    init();
     var player = Player.init(globals.SCREEN_WIDTH / 2, globals.SCREEN_HEIGHT / 2);
-    var environment = Environment.init(&player);
+    var environment = 
+        Environment.init(
+            &player
+        );
     while (!rl.windowShouldClose()) {
-        // Update
         environment.update();
         // Render
         rl.beginDrawing();
         defer rl.endDrawing();
-        rl.clearBackground(rl.Color.white);
-        rl.drawRectangleV(player.pos, player.size, rl.Color.black);
+        environment.render();
     }
 }

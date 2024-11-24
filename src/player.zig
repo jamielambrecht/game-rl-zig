@@ -34,13 +34,20 @@ pub const Player = struct {
     jumpMotion: JumpMotion,
 
     // Private functions
-    fn handleVerticalMotion(self: *Player, gravity: u32) void {
+    fn handleVerticalMotion(self: *Player, gravity: u32, floor: f32) void {
         switch (self.jumpState) {
             JumpState.FALLING => {
                 self.vel.y = @floatFromInt(gravity);
             },
+            JumpState.START_JUMP => {
+                self.vel.y = self.jumpMotion.jumpForce;
+            },
             JumpState.ASCENDING => {
                 self.vel.y += @floatFromInt(gravity);
+            },
+            JumpState.LANDING => {
+                self.vel.y = 0;
+                self.pos.y = floor - self.size.y;
             },
             JumpState.APEX, JumpState.GROUNDED => {
                 self.vel.y = 0;
@@ -69,14 +76,18 @@ pub const Player = struct {
         return Player{ .size = rl.Vector2.init(24, 32), .pos = rl.Vector2.init(x, y), .vel = rl.Vector2.init(0.0, 0.0), .facing = FacingState.RIGHT, .lateralMotionState = LateralMotionState.IDLE, .lateralMotion = IDLE, .jumpState = JumpState.FALLING, .jumpMotion = JumpMotion.init(-60.0, 0.2 * globals.TARGET_FPS) };
     }
 
-    pub fn update(self: *Player, gravity: u32) void {
-        self.handleVerticalMotion(gravity);
+    pub fn update(self: *Player, gravity: u32, floor: f32) void {
+        self.handleVerticalMotion(gravity, floor);
         self.handleLateralMotion();
         self.pos.x += self.vel.x;
         self.pos.y += self.vel.y;
     }
 
-    // Control functions
+    pub fn render(self: *Player) void {
+        rl.drawRectangleV(self.pos, self.size, rl.Color.black);
+    }
+
+    // Player Lateral Motion Action
     pub fn beginWalking(self: *Player, facing: FacingState) void {
         self.facing = facing;
         self.lateralMotionState = switch (self.facing) {
@@ -111,8 +122,12 @@ pub const Player = struct {
         self.lateralMotionState = LateralMotionState.IDLE;
     }
 
-    pub fn beginJumping(self: *Player) void {
-        self.vel.y = self.jumpMotion.jumpForce;
+    // Player Jump Action
+    pub fn beginJumpAction(self: *Player) void {
+        self.jumpState = JumpState.START_JUMP;
+    }
+
+    pub fn continueJumping(self: *Player) void {
         self.jumpState = JumpState.ASCENDING;
     }
 
@@ -124,8 +139,11 @@ pub const Player = struct {
         self.jumpState = JumpState.FALLING;
     }
 
-    pub fn stopFalling(self: *Player, floor: f32) void {
-        self.pos.y = floor - self.size.y;
+    pub fn stopFalling(self: *Player) void {
+        self.jumpState = JumpState.LANDING;
+    }
+
+    pub fn endJumpAction(self: *Player) void {
         self.jumpState = JumpState.GROUNDED;
     }
 };

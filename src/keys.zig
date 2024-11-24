@@ -1,5 +1,9 @@
+// Keys Module
+
+// Modules
 const rl: type = @import("raylib");
 
+// Type Definitions
 pub const KeyState = enum {
     NOT_PRESSED,
     PRESSED,

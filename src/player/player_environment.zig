@@ -1,10 +1,10 @@
 // Player-Environment Interface
 
 // Module Imports
-const player_ = @import("../../player.zig");
-const environment_ = @import("../../environment.zig");
-const state: type = @import("../state.zig");
-const keys = @import("../../keys.zig");
+const player_ = @import("../player.zig");
+const environment_ = @import("../environment.zig");
+const state: type = @import("state.zig");
+const keys = @import("../keys.zig");
 
 // Types
 const Player = player_.Player;
@@ -15,6 +15,7 @@ const InputKey = keys.InputKey;
 const FacingState = state.FacingState;
 const LateralMotionState = state.LateralMotionState;
 
+// Functions
 pub fn playerJump(environment: *Environment, player: *Player) void {
     const jump_key = environment.playerController.jumpKey;
     const jump_key_state = jump_key.state;
@@ -22,8 +23,11 @@ pub fn playerJump(environment: *Environment, player: *Player) void {
     switch (player.jumpState) {
         JumpState.GROUNDED => {
             if (jump_key_state == KeyState.PRESSED) {
-                player.beginJumping();
+                player.beginJumpAction();
             }
+        },
+        JumpState.START_JUMP => {
+            player.continueJumping();
         },
         JumpState.ASCENDING => {
             if (player.vel.y >= 0.0 or jump_key_state != KeyState.HELD) {
@@ -39,13 +43,14 @@ pub fn playerJump(environment: *Environment, player: *Player) void {
         },
         JumpState.FALLING => {
             if (player.pos.y + player.size.y >= environment.floor) {
-                player.stopFalling(environment.floor);
+                player.stopFalling();
             }
         },
+        JumpState.LANDING => {
+            player.endJumpAction();
+        }
     }
 }
-
-// Type Definitions
 
 pub fn playerLateralMotion(
     _: *Environment,
