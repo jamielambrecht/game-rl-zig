@@ -18,23 +18,23 @@ pub const Environment = struct {
     gravity: u32,
     floor: f32,
     playerController: PlayerController,
-    player: *Player,
+    player: Player,
 
-    pub fn init(player: *Player) Environment {
+    pub fn init() Environment {
         return .{
             .gravity = 12,
             .floor = globals.SCREEN_HEIGHT,
             .playerController = globals.DEFAULT_PLAYER_CONTROLLER,
-            .player = player
+            .player = Player.init(globals.SCREEN_WIDTH / 2, globals.SCREEN_HEIGHT / 2)
         };
     }
 
     pub fn update(self: *Environment) void {
         self.playerController.update();
-        IPlayerEnvironment.playerJump(self, self.player);
+        IPlayerEnvironment.playerJump(self, &self.player);
         IPlayerEnvironment.playerLateralMotion(
             self,
-            self.player,
+            &self.player,
             self.playerController.getHorizontalAxis(),
             self.playerController.runKey.state == KeyState.HELD,
             // player.lateralMotionState

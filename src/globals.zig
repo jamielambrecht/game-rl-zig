@@ -16,7 +16,6 @@ const Player = player_.Player;
 pub const SCREEN_WIDTH = 960;
 pub const SCREEN_HEIGHT = 540;
 pub const TARGET_FPS = 60;
-pub var DEFAULT_PLAYER = Player.init(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 pub const DEFAULT_PLAYER_CONTROLLER = 
         controller.PlayerController{
     .upKey      = InputKey.init(rl.KeyboardKey.key_w),
