@@ -1,34 +1,28 @@
 // Main
 
 // Module Imports
-const rl: type = @import("raylib");
+const game_ = @import("game.zig");
 const globals = @import("globals.zig");
-const player_ = @import("player.zig");
-const environment_ = @import("environment.zig");
+const rl: type = @import("raylib");
 
 // Types
-const Player = player_.Player;
-const Environment = environment_.Environment;
+const Game = game_.Game;
 
+// Functions
 fn init() void {
     rl.initWindow(globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT, "Untitled Game");
     rl.setTargetFPS(globals.TARGET_FPS);
-} 
+}
 
 // Entry Point
 pub fn main() anyerror!void {
+    var game = Game.init();
     defer rl.closeWindow();
     init();
-    var player = Player.init(globals.SCREEN_WIDTH / 2, globals.SCREEN_HEIGHT / 2);
-    var environment = 
-        Environment.init(
-            &player
-        );
     while (!rl.windowShouldClose()) {
-        environment.update();
-        // Render
+        game.update();
         rl.beginDrawing();
         defer rl.endDrawing();
-        environment.render();
+        game.render();
     }
 }
