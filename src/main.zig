@@ -20,9 +20,9 @@ pub fn main() anyerror!void {
     defer rl.closeWindow();
     init();
     while (!rl.windowShouldClose()) {
+        defer rl.endDrawing();
         game.update();
         rl.beginDrawing();
-        defer rl.endDrawing();
         game.render();
     }
 }

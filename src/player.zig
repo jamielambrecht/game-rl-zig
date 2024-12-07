@@ -14,13 +14,10 @@ const LateralMotion = motion.LateralMotion;
 const JumpState = state.JumpState;
 const JumpMotion = motion.JumpMotion;
 
-// Objects
-const WALK =
-    LateralMotion.init(5.0, 0.3);
-const RUN =
-    LateralMotion.init(10.0, 0.2);
-const IDLE =
-    LateralMotion.init(0.0, 0.0);
+// Player Motions
+pub const WALK = LateralMotion.init(5.0, 0.3);
+pub const RUN = LateralMotion.init(10.0, 0.2);
+pub const IDLE = LateralMotion.init(0.0, 0.0);
 
 // Type Definitions
 pub const Player = struct {
@@ -56,14 +53,22 @@ pub const Player = struct {
     }
 
     fn handleLateralMotion(self: *Player) void {
-        if (self.lateralMotionState == LateralMotionState.IDLE) {
-            self.vel.x = 0.0;
-            return;
-        }
         const direction: f32 = switch (self.facing) {
             FacingState.LEFT => -1.0,
             FacingState.RIGHT => 1.0,
         };
+        switch (self.lateralMotionState) {
+            LateralMotionState.IDLE, LateralMotionState.STOPPING => {
+                self.vel.x = 0.0;
+                return;
+            },
+            LateralMotionState.WALK_LEFT, LateralMotionState.WALK_RIGHT => {
+                self.lateralMotion = WALK;
+            },
+            LateralMotionState.RUN_LEFT, LateralMotionState.RUN_RIGHT => {
+                self.lateralMotion = RUN;
+            }
+        }
         if (self.vel.x * direction < self.lateralMotion.targetSpeed) {
             self.vel.x += direction * self.lateralMotion.acceleration;
         } else {
@@ -73,7 +78,16 @@ pub const Player = struct {
 
     // Public functions
     pub fn init(x: f32, y: f32) Player {
-        return Player{ .size = rl.Vector2.init(24, 32), .pos = rl.Vector2.init(x, y), .vel = rl.Vector2.init(0.0, 0.0), .facing = FacingState.RIGHT, .lateralMotionState = LateralMotionState.IDLE, .lateralMotion = IDLE, .jumpState = JumpState.FALLING, .jumpMotion = JumpMotion.init(-60.0, 0.2 * globals.TARGET_FPS) };
+        return Player{
+            .size = rl.Vector2.init(24, 32), 
+            .pos = rl.Vector2.init(x, y), 
+            .vel = rl.Vector2.init(0.0, 0.0), 
+            .facing = FacingState.RIGHT,
+            .lateralMotionState = LateralMotionState.IDLE,
+            .lateralMotion = IDLE,
+            .jumpState = JumpState.FALLING,
+            .jumpMotion = JumpMotion.init(-60.0, 0.2 * globals.TARGET_FPS)
+        };
     }
 
     pub fn update(self: *Player, gravity: u32, floor: f32) void {
@@ -87,63 +101,16 @@ pub const Player = struct {
         rl.drawRectangleV(self.pos, self.size, rl.Color.black);
     }
 
-    // Player Lateral Motion Action
-    pub fn beginWalking(self: *Player, facing: FacingState) void {
-        self.facing = facing;
-        self.lateralMotionState = switch (self.facing) {
-            FacingState.LEFT => LateralMotionState.WALK_LEFT,
-            FacingState.RIGHT => LateralMotionState.WALK_RIGHT,
-        };
-        self.lateralMotion = WALK;
+    pub fn setJumpState(self: *Player, jump_state: JumpState) void {
+        self.jumpState = jump_state;
     }
 
-    pub fn beginRunning(self: *Player, facing: FacingState) void {
-        if (@abs(self.vel.x) < WALK.targetSpeed) {
-            self.beginWalking(facing);
-            return;
-        }
-        self.facing = facing;
-        switch (self.facing) {
-            FacingState.LEFT => {
-                self.lateralMotionState = LateralMotionState.RUN_LEFT;
-            },
-            FacingState.RIGHT => {
-                self.lateralMotionState = LateralMotionState.RUN_RIGHT;
-            },
-        }
-        self.lateralMotion = RUN;
+    pub fn setFacingState(self: *Player, facing_state: FacingState) void {
+        self.facing = facing_state;
     }
 
-    pub fn beginStopping(self: *Player) void {
-        self.lateralMotionState = LateralMotionState.STOPPING;
+    pub fn setLateralMotionState(self: *Player, lateral_motion_state: LateralMotionState) void {
+        self.lateralMotionState = lateral_motion_state;
     }
 
-    pub fn finishStopping(self: *Player) void {
-        self.lateralMotionState = LateralMotionState.IDLE;
-    }
-
-    // Player Jump Action
-    pub fn beginJumpAction(self: *Player) void {
-        self.jumpState = JumpState.START_JUMP;
-    }
-
-    pub fn continueJumping(self: *Player) void {
-        self.jumpState = JumpState.ASCENDING;
-    }
-
-    pub fn stopJumping(self: *Player) void {
-        self.jumpState = JumpState.APEX;
-    }
-
-    pub fn startFalling(self: *Player) void {
-        self.jumpState = JumpState.FALLING;
-    }
-
-    pub fn stopFalling(self: *Player) void {
-        self.jumpState = JumpState.LANDING;
-    }
-
-    pub fn endJumpAction(self: *Player) void {
-        self.jumpState = JumpState.GROUNDED;
-    }
 };
