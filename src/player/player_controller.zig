@@ -36,7 +36,8 @@ pub const PlayerController = struct {
 
     pub fn jumpInput(self: *PlayerController) JumpState {
         const jump_key = self.controller.jumpKey;
-        switch (self.player.jumpState) {
+        const player_jump_motion = self.player.getJumpMotion();
+        switch (player_jump_motion.getJumpState()) {
             JumpState.GROUNDED => {
                 if (jump_key.state == KeyState.PRESSED) {
                     return JumpState.START_JUMP;
@@ -51,7 +52,7 @@ pub const PlayerController = struct {
                 }
             },
             JumpState.APEX => {
-                if (jump_key.heldFor >= self.player.jumpMotion.hangTime or
+                if (jump_key.heldFor >= player_jump_motion.hangTime or
                     jump_key.state != KeyState.HELD)
                 {
                     return JumpState.FALLING;
@@ -64,7 +65,7 @@ pub const PlayerController = struct {
                 return JumpState.GROUNDED;
             }
         }
-        return self.player.jumpState;
+        return player_jump_motion.getJumpState();
     }
 
     pub fn lateralMotionInput(self: *PlayerController) LateralMotionState {

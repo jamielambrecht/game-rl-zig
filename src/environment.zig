@@ -17,14 +17,16 @@ const KeyState = keys.KeyState;
 
 // Type Definitions
 pub const Environment = struct {
-    gravity: u32,
+    gravity: i32,
     floor: f32,
     playerController: PlayerController,
     player: *Player,
 
     pub fn init(default_controller: *Controller, player: *Player) Environment {
+        const default_gravity: f32 = 12.0;
+        player.setWeight(1.0 * default_gravity);
         return .{
-            .gravity = 12,
+            .gravity = default_gravity,
             .floor = globals.SCREEN_HEIGHT,
             .playerController = PlayerController.init(player, default_controller),
             .player = player
@@ -35,7 +37,7 @@ pub const Environment = struct {
         self.playerController.update();
         PlayerEnvironment.playerJump(self, self.player);
         PlayerEnvironment.playerLateralMotion(self, self.player);
-        self.player.update(self.gravity, self.floor);
+        self.player.update();
     }
 
     pub fn render(self: *Environment) void {
